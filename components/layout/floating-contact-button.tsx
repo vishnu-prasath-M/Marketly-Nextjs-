@@ -72,14 +72,29 @@ export function FloatingContactButton() {
         transition={{ delay: 1, type: "spring" }}
         className="fixed bottom-6 right-6 z-50"
       >
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setOpen(true)}
-          className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-soft-lg flex items-center justify-center hover:shadow-soft-lg-lg transition-all"
+        <motion.div
+          className="relative"
+          animate={{
+            boxShadow: [
+              "0 0 0 0 rgba(79,70,229,0.55)",
+              "0 0 0 10px rgba(79,70,229,0)",
+            ],
+          }}
+          transition={{
+            duration: 1.8,
+            repeat: Infinity,
+            repeatType: "loop",
+          }}
         >
-          <MessageCircle className="h-6 w-6" />
-        </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.94 }}
+            onClick={() => setOpen(true)}
+            className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-soft-lg flex items-center justify-center transition-all"
+          >
+            <MessageCircle className="h-6 w-6" />
+          </motion.button>
+        </motion.div>
       </motion.div>
 
       <Dialog open={open} onOpenChange={setOpen}>

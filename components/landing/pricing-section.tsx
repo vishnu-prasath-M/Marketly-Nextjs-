@@ -70,75 +70,82 @@ const plans = [
 
 export function PricingSection() {
   return (
-    <section className="py-20 bg-background">
+    <section className="relative py-20 bg-slate-950">
       <Container>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="relative z-10 mb-12 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Simple, Transparent Pricing
+          <span className="inline-flex items-center rounded-full border border-indigo-500/40 bg-indigo-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-indigo-100/90 mb-4">
+            Pricing
+          </span>
+          <h2 className="text-3xl md:text-4xl font-semibold text-slate-50 mb-3">
+            Simple, transparent pricing
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Choose the perfect plan for your needs. Upgrade or downgrade at any time.
+          <p className="text-sm md:text-base text-slate-300/90 max-w-2xl mx-auto">
+            Start for free, then upgrade when you are ready to list, promote, or scale
+            your portfolio of digital assets.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => {
             const Icon = plan.icon
             return (
               <motion.div
                 key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: index * 0.1 }}
               >
                 <Card
                   className={`h-full flex flex-col relative overflow-hidden ${
                     plan.popular
-                      ? "border-primary shadow-soft-lg scale-105"
-                      : "hover:shadow-soft-lg transition-all"
+                      ? "border-indigo-500/80 shadow-[0_24px_70px_rgba(79,70,229,0.6)] scale-105"
+                      : "border-slate-700/70 hover:border-indigo-500/70 hover:shadow-[0_20px_60px_rgba(15,23,42,0.9)] transition-all shadow-[0_16px_45px_rgba(15,23,42,0.85)]"
                   }`}
                 >
                   {plan.popular && (
-                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 rounded-bl-lg text-xs font-semibold">
-                      Most Popular
+                    <div className="absolute top-0 right-0 flex items-center gap-1 rounded-bl-xl bg-gradient-to-l from-indigo-500 via-indigo-500/90 to-indigo-400 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-50">
+                      <Crown className="h-3 w-3" />
+                      Recommended
                     </div>
                   )}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${plan.gradient} opacity-50`}
                   />
-                  <CardHeader className="relative">
+                  <CardHeader className="relative bg-slate-950/60">
                     <div className="flex items-center space-x-3 mb-2">
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
                       <CardTitle className="text-2xl">{plan.name}</CardTitle>
                     </div>
-                    <CardDescription>{plan.description}</CardDescription>
+                    <CardDescription className="text-slate-300/90">
+                      {plan.description}
+                    </CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      <span className="text-muted-foreground ml-2">
-                        /{plan.period}
+                      <span className="text-4xl font-bold text-slate-50">
+                        {plan.price}
                       </span>
+                      <span className="ml-2 text-sm text-slate-400">/{plan.period}</span>
                     </div>
                   </CardHeader>
-                  <CardContent className="relative flex-1">
+                  <CardContent className="relative flex-1 bg-slate-950/40">
                     <ul className="space-y-3">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start space-x-2">
-                          <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                          <span className="text-sm">{feature}</span>
+                          <Check className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-slate-200/90">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter className="relative">
+                  <CardFooter className="relative bg-slate-950/60">
                     <Button
                       className="w-full"
                       variant={plan.popular ? "default" : "outline"}

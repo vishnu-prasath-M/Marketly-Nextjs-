@@ -6,6 +6,8 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { FloatingContactButton } from "@/components/layout/floating-contact-button"
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 import { validateEnv } from "@/lib/env"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
@@ -38,7 +40,11 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body>
         <AuthProvider>
-          {children}
+          <Navbar />
+          <main className="min-h-screen bg-slate-50">
+            {children}
+            <Footer />
+          </main>
           <Toaster />
           <FloatingContactButton />
         </AuthProvider>

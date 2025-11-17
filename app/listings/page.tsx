@@ -1,13 +1,10 @@
 import { Suspense } from "react"
 import { prisma } from "@/lib/prisma"
-import { ListingCard } from "@/components/listings/listing-card"
 import { Container } from "@/components/ui/container"
-import { PageHeader } from "@/components/ui/page-header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Search } from "lucide-react"
+import { Search, SlidersHorizontal, ChevronDown } from "lucide-react"
 
 interface ListingsPageProps {
   searchParams: {
@@ -134,6 +131,11 @@ async function ListingsGrid({ searchParams }: ListingsPageProps) {
     where: {
       status: "active",
       ...(searchParams.type && { type: searchParams.type.toUpperCase() as any }),
+      ...(searchParams.category && {
+        category: {
+          slug: searchParams.category,
+        },
+      }),
       ...(searchParams.search && {
         OR: [
           { title: { contains: searchParams.search, mode: "insensitive" } },
@@ -159,32 +161,62 @@ async function ListingsGrid({ searchParams }: ListingsPageProps) {
     ? listings.slice(0, 9)
     : [...listings, ...dummyListings.slice(0, 9 - listings.length)]
 
-  if (displayListings.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No listings found.</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {displayListings.map((listing) => (
-        <ListingCard
-          key={listing.id}
-          id={listing.id}
-          title={listing.title}
-          slug={listing.slug}
-          type={listing.type}
-          askingPrice={listing.askingPrice}
-          monthlyRevenue={listing.monthlyRevenue}
-          profitMargin={listing.profitMargin}
-          images={listing.images}
-          views={listing.views}
-          featured={listing.featured}
-        />
-      ))}
-    </div>
+    <>
+      {displayListings.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No listings found.</p>
+        </div>
+      ) : (
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {displayListings.map((listing) => (
+            <div
+              key={listing.id}
+              className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-shadow duration-300 hover:shadow-soft-lg border border-slate-100"
+            >
+              <div
+                className="aspect-video w-full bg-cover bg-center"
+                style={{
+                  backgroundImage:
+                    listing.images && listing.images.length > 0
+                      ? `url(${listing.images[0]})`
+                      : "linear-gradient(135deg, #4F46E5, #10B981)",
+                }}
+              />
+              <div className="flex flex-1 flex-col p-5">
+                <p className="text-base font-semibold leading-tight text-slate-900 line-clamp-2">
+                  {listing.title}
+                </p>
+                <div className="mt-auto pt-4">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-slate-500">Asking Price</p>
+                      <p className="text-xl font-bold text-indigo-600">
+                        ${listing.askingPrice.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-100 pt-3 text-sm">
+                      <div>
+                        <p className="text-xs text-slate-500">Revenue</p>
+                        <p className="font-semibold text-slate-900">
+                          ${listing.monthlyRevenue.toLocaleString()}/mo
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">Profit Margin</p>
+                        <p className="font-semibold text-slate-900">
+                          {listing.profitMargin}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   )
 }
 
@@ -199,37 +231,136 @@ function ListingsSkeleton() {
 }
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
+  const categories = await prisma.category.findMany({
+    orderBy: { name: "asc" },
+  })
+
   return (
     <Container className="py-8">
-      <PageHeader
-        title="Browse Listings"
-        description="Discover profitable digital businesses for sale"
-      />
-      <div className="mb-8 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search listings..."
-            className="pl-10"
-            defaultValue={searchParams.search}
-          />
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">Marketplace</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Find your next digital business to acquire.
+          </p>
         </div>
-        <Select defaultValue={searchParams.type || "all"}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="saas">SaaS</SelectItem>
-            <SelectItem value="ecommerce">Ecommerce</SelectItem>
-            <SelectItem value="app">App</SelectItem>
-            <SelectItem value="website">Website</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700">Sort by:</span>
+          <button className="flex h-10 items-center justify-center gap-2 rounded-xl bg-white pl-4 pr-3 text-sm font-medium text-slate-900 shadow-soft border border-slate-200">
+            Newest
+            <ChevronDown className="h-4 w-4 text-slate-500" />
+          </button>
+        </div>
       </div>
-      <Suspense fallback={<ListingsSkeleton />}>
-        <ListingsGrid searchParams={searchParams} />
-      </Suspense>
+
+      <form
+        className="mt-8 grid gap-8 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]"
+        method="GET"
+      >
+        {/* Left sidebar filters */}
+        <aside className="space-y-4 md:sticky md:top-28 md:self-start">
+          <h2 className="text-sm font-semibold text-slate-800">Filters</h2>
+          <button
+            type="button"
+            className="flex h-11 w-full items-center justify-between rounded-xl bg-white px-4 text-sm font-medium text-slate-900 shadow-soft border border-slate-200"
+          >
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-slate-500" />
+              Quick filters
+            </span>
+            <span className="text-xs text-slate-500">(UI only)</span>
+          </button>
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+              Type
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="submit"
+                name="type"
+                value="saas"
+                variant="outline"
+                className="h-9 rounded-full bg-white px-3 text-xs font-medium text-slate-900 shadow-soft border-slate-200"
+              >
+                SaaS
+              </Button>
+              <Button
+                type="submit"
+                name="type"
+                value="ecommerce"
+                variant="outline"
+                className="h-9 rounded-full bg-white px-3 text-xs font-medium text-slate-900 shadow-soft border-slate-200"
+              >
+                E-commerce
+              </Button>
+              <Button
+                type="submit"
+                name="type"
+                value="website"
+                variant="outline"
+                className="h-9 rounded-full bg-white px-3 text-xs font-medium text-slate-900 shadow-soft border-slate-200"
+              >
+                Content
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-4">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+              Categories
+            </p>
+            <div className="flex flex-col gap-1">
+              <Button
+                type="submit"
+                name="category"
+                value=""
+                variant="outline"
+                className={`justify-start h-8 rounded-full px-3 text-xs font-medium shadow-soft border ${
+                  !searchParams.category
+                    ? "bg-slate-900 text-white border-slate-900"
+                    : "bg-white text-slate-900 border-slate-200"
+                }`}
+              >
+                All categories
+              </Button>
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  type="submit"
+                  name="category"
+                  value={category.slug}
+                  variant="outline"
+                  className={`justify-start h-8 rounded-full px-3 text-xs font-medium shadow-soft border ${
+                    searchParams.category === category.slug
+                      ? "bg-slate-900 text-white border-slate-900"
+                      : "bg-white text-slate-900 border-slate-200"
+                  }`}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Right content: search + listings */}
+        <div>
+          <div className="relative mb-6">
+            <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              type="search"
+              name="search"
+              placeholder="Search by name, category, keyword..."
+              className="rounded-full border-0 bg-white py-3 pl-11 pr-4 text-slate-900 shadow-soft focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+              defaultValue={searchParams.search}
+            />
+          </div>
+
+          <Suspense fallback={<ListingsSkeleton />}>
+            <ListingsGrid searchParams={searchParams} />
+          </Suspense>
+        </div>
+      </form>
     </Container>
   )
 }
