@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { Suspense, useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { Container } from "@/components/ui/container"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import useSWR from "swr"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-export default function ChatPage() {
+function ChatContent() {
   const searchParams = useSearchParams()
   const { data: session } = useSession()
   const listingId = searchParams.get("listingId")
@@ -101,3 +101,10 @@ export default function ChatPage() {
   )
 }
 
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading chat...</div>}>
+      <ChatContent />
+    </Suspense>
+  )
+}

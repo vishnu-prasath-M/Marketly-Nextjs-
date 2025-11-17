@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion, useSpring, useTransform } from "framer-motion"
+import { useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 
 interface AnimatedCounterProps {
   value: number
@@ -19,10 +19,11 @@ export function AnimatedCounter({
   decimals = 0,
 }: AnimatedCounterProps) {
   const [displayValue, setDisplayValue] = useState(0)
+  const previousValueRef = useRef(0)
 
   useEffect(() => {
     let startTime: number | null = null
-    const startValue = displayValue
+    const startValue = previousValueRef.current
 
     const animate = (currentTime: number) => {
       if (startTime === null) startTime = currentTime
@@ -37,6 +38,7 @@ export function AnimatedCounter({
         requestAnimationFrame(animate)
       } else {
         setDisplayValue(value)
+        previousValueRef.current = value
       }
     }
 
