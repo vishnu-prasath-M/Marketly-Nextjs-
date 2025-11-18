@@ -261,6 +261,8 @@ async function ListingsGrid({ searchParams }: ListingsPageProps) {
                         <p className="font-semibold text-slate-900">
                           {listing.profitMargin}%
                         </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
