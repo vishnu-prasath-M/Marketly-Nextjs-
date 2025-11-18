@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import Image from "next/image"
 import { prisma } from "@/lib/prisma"
 import { Container } from "@/components/ui/container"
 import { Button } from "@/components/ui/button"
@@ -12,6 +11,7 @@ import { formatCurrency, formatNumber } from "@/lib/utils"
 import { MessageCircle, TrendingUp, Calendar, Eye } from "lucide-react"
 import { auth } from "@/lib/auth"
 import Link from "next/link"
+import { ImageGallery } from "./image-gallery"
 
 interface ListingPageProps {
   params: {
@@ -56,20 +56,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
           {/* Image Gallery */}
           <Card>
             <CardContent className="p-0">
-              {listing.images && listing.images.length > 0 ? (
-                <div className="relative h-96 w-full">
-                  <Image
-                    src={listing.images[0]}
-                    alt={listing.title}
-                    fill
-                    className="object-cover rounded-t-xl"
-                  />
-                </div>
-              ) : (
-                <div className="h-96 w-full bg-secondary flex items-center justify-center rounded-t-xl">
-                  <p className="text-muted-foreground">No image available</p>
-                </div>
-              )}
+              <ImageGallery images={listing.images || []} title={listing.title} />
             </CardContent>
           </Card>
 

@@ -5,21 +5,68 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/utils"
 
+const FALLBACK_LISTINGS = [
+  {
+    id: "fallback-1",
+    title: "SaaS analytics dashboard",
+    slug: "fallback-1",
+    type: "SAAS",
+    askingPrice: 49000,
+    monthlyRevenue: 4200,
+    profitMargin: 78,
+  },
+  {
+    id: "fallback-2",
+    title: "Ecommerce brand – home & living",
+    slug: "fallback-2",
+    type: "ECOMMERCE",
+    askingPrice: 87000,
+    monthlyRevenue: 9300,
+    profitMargin: 62,
+  },
+  {
+    id: "fallback-3",
+    title: "Content site – personal finance",
+    slug: "fallback-3",
+    type: "WEBSITE",
+    askingPrice: 32000,
+    monthlyRevenue: 3100,
+    profitMargin: 80,
+  },
+]
+
 export async function FeaturedListings() {
-  const listings = await prisma.listing.findMany({
-    where: { featured: true, status: "active" },
-    take: 6,
-    include: {
-      category: true,
-      seller: {
-        select: {
-          name: true,
-          image: true,
+  let listings: any[] = []
+
+  try {
+    // Prefer featured listings, but always show exactly 3 cards by
+    // padding from the broader active marketplace if needed.
+    const featured = await prisma.listing.findMany({
+      where: { featured: true, status: "active" },
+      take: 3,
+      orderBy: { createdAt: "desc" },
+    })
+
+    listings = featured
+
+    if (listings.length < 3) {
+      const extra = await prisma.listing.findMany({
+        where: {
+          status: "active",
+          featured: false,
         },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  })
+        take: 3 - listings.length,
+        orderBy: { createdAt: "desc" },
+      })
+
+      listings = [...listings, ...extra]
+    }
+  } catch (e) {
+    // If the database is unreachable, fall back to static examples
+    listings = []
+  }
+
+  const displayListings = listings.length > 0 ? listings.slice(0, 3) : FALLBACK_LISTINGS
 
   return (
     <section className="relative py-20 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200">
@@ -37,13 +84,12 @@ export async function FeaturedListings() {
             and pricing at a glance.
           </p>
         </div>
-        <div className="relative z-10 mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listings.length > 0
-            ? listings.map((listing) => (
-                <div key={listing.id} className="h-full">
-                  <Card className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.12)] transition-transform duration-300 hover:-translate-y-2 hover:shadow-[0_26px_90px_rgba(15,23,42,0.18)]">
-                    <div className="relative h-32 w-full bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-emerald-400 opacity-90" />
-                    <CardContent className="flex-1 p-5">
+        <div className="relative z-10 mb-10 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {displayListings.map((listing) => (
+            <div key={listing.id} className="h-full">
+              <Card className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft transition-transform duration-300 hover:-translate-y-2 hover:shadow-soft-lg">
+                <div className="relative h-28 w-full bg-gradient-to-br from-indigo-500 via-purple-500 to-emerald-400 opacity-90" />
+                <CardContent className="flex-1 p-4">
                       <p className="text-xs uppercase tracking-[0.22em] text-slate-500 mb-1">
                         {listing.type}
                       </p>
@@ -51,18 +97,22 @@ export async function FeaturedListings() {
                         {listing.title}
                       </h3>
                       <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between text-slate-700">
-                          <span className="text-slate-500">Monthly revenue</span>
-                          <span className="font-medium">
-                            {formatCurrency(listing.monthlyRevenue)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-700">
-                          <span className="text-slate-500">Profit margin</span>
-                          <span className="font-semibold text-emerald-500">
-                            {listing.profitMargin}%
-                          </span>
-                        </div>
+                        {typeof listing.monthlyRevenue === "number" && (
+                          <div className="flex items-center justify-between text-slate-700">
+                            <span className="text-slate-500">Monthly revenue</span>
+                            <span className="font-medium">
+                              {formatCurrency(listing.monthlyRevenue)}
+                            </span>
+                          </div>
+                        )}
+                        {typeof listing.profitMargin === "number" && (
+                          <div className="flex items-center justify-between text-slate-700">
+                            <span className="text-slate-500">Profit margin</span>
+                            <span className="font-semibold text-emerald-500">
+                              {listing.profitMargin}%
+                            </span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between text-slate-700">
                           <span className="text-slate-500">Asking price</span>
                           <span className="font-semibold text-indigo-600">
@@ -70,30 +120,16 @@ export async function FeaturedListings() {
                           </span>
                         </div>
                       </div>
-                    </CardContent>
-                    <CardFooter className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-4 text-xs text-slate-500">
-                      <span>Ideal for serious buyers</span>
-                      <Button size="sm" asChild className="rounded-full px-4">
-                        <Link href={`/listings/${listing.slug}`}>View details</Link>
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </div>
-              ))
-            : Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-full rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.9)] animate-pulse"
-                >
-                  <div className="mb-4 h-32 w-full rounded-2xl bg-slate-800/80" />
-                  <div className="mb-3 h-4 w-2/3 rounded-full bg-slate-800" />
-                  <div className="mb-2 h-3 w-1/2 rounded-full bg-slate-800" />
-                  <div className="mt-4 flex gap-2">
-                    <div className="h-3 w-16 rounded-full bg-slate-800" />
-                    <div className="h-3 w-20 rounded-full bg-slate-800" />
-                  </div>
-                </div>
-              ))}
+                </CardContent>
+                <CardFooter className="flex items-center justify-between border-t border-slate-100 bg-white px-4 py-3 text-[11px] text-slate-500">
+                  <span>Ideal for serious buyers</span>
+                  <Button size="sm" asChild className="rounded-full px-3 text-xs">
+                    <Link href={`/listings/${listing.slug}`}>View details</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          ))}
         </div>
         <div className="relative z-10 flex justify-center">
           <Button

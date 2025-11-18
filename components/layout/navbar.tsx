@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 const navLinks = [
   { label: "Marketplace", href: "/listings", match: "/listings" },
   { label: "Pricing", href: "/pricing", match: "/pricing" },
-  { label: "About Us", href: "/#about", match: "#about" },
+  { label: "About Us", href: "/about", match: "/about" },
 ]
 
 export function Navbar() {
@@ -55,26 +55,11 @@ export function Navbar() {
   }
 
   const handleNav = (href: string) => {
-    if (href.startsWith("/#")) {
-      const section = href.split("#")[1]
-      if (pathname === "/") {
-        const el = document.getElementById(section)
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" })
-        }
-      } else {
-        router.push(href)
-      }
-    } else {
-      router.push(href)
-    }
+    router.push(href)
     setDrawerOpen(false)
   }
 
   const isActive = (link: (typeof navLinks)[number]) => {
-    if (link.match.startsWith("#")) {
-      return pathname === "/" && activeHash === link.match
-    }
     return pathname?.startsWith(link.match)
   }
 

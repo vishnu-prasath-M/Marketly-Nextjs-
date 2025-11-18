@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 import { ShoppingBag } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +29,7 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [userExistsModalOpen, setUserExistsModalOpen] = useState(false)
 
   const {
     register,
@@ -52,7 +54,14 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || "Registration failed")
+        const message = error.message || "Registration failed"
+
+        if (message.toLowerCase().includes("already exists")) {
+          setUserExistsModalOpen(true)
+          return
+        }
+
+        throw new Error(message)
       }
 
       toast({
@@ -62,11 +71,13 @@ export default function RegisterPage() {
 
       router.push("/auth/login")
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      })
+      if (!error?.message?.toLowerCase().includes("already exists")) {
+        toast({
+          title: "Error",
+          description: error.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -74,6 +85,17 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+      <Dialog open={userExistsModalOpen} onOpenChange={setUserExistsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User already exists</DialogTitle>
+            <DialogDescription>
+              An account with this email already exists. Please sign in instead, or use a different email.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link href="/" className="flex items-center justify-center space-x-2 mb-4">

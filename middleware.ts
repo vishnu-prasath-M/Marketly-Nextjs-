@@ -5,7 +5,7 @@ import { getToken } from "next-auth/jwt"
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  const publicRoutes = ["/", "/auth", "/listings", "/api"]
+  const publicRoutes = ["/", "/auth", "/listings", "/pricing", "/about", "/api"]
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   if (isPublicRoute) {

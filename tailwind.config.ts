@@ -20,33 +20,41 @@ const config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#85B8A0",
-          foreground: "#111111",
+          // Dark slate primary
+          DEFAULT: "#1F2937",
+          foreground: "#F9FAFB",
         },
         secondary: {
-          DEFAULT: "#CFE8DD",
-          foreground: "#111111",
+          // Soft slate for subtle surfaces
+          DEFAULT: "#E5E7EB",
+          foreground: "#111827",
         },
         accent: {
-          DEFAULT: "#E7C8C7",
-          foreground: "#111111",
+          // Indigo accent
+          DEFAULT: "#4F46E5",
+          foreground: "#F9FAFB",
         },
-        background: "#F5F3F0",
-        foreground: "#111111",
-        border: "#CFE8DD",
-        input: "#CFE8DD",
-        ring: "#85B8A0",
+        // Highlight / success tone (emerald/green)
+        highlight: {
+          DEFAULT: "#10B981",
+          foreground: "#ECFDF5",
+        },
+        background: "#F3F4F6",
+        foreground: "#111827",
+        border: "#E5E7EB",
+        input: "#E5E7EB",
+        ring: "#4F46E5",
         muted: {
-          DEFAULT: "#CFE8DD",
-          foreground: "#111111",
+          DEFAULT: "#E5E7EB",
+          foreground: "#6B7280",
         },
         popover: {
-          DEFAULT: "#F5F3F0",
-          foreground: "#111111",
+          DEFAULT: "#FFFFFF",
+          foreground: "#111827",
         },
         card: {
           DEFAULT: "#FFFFFF",
-          foreground: "#111111",
+          foreground: "#111827",
         },
       },
       borderRadius: {

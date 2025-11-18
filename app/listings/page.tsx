@@ -11,6 +11,13 @@ interface ListingsPageProps {
     type?: string
     category?: string
     search?: string
+    sort?: string
+    minPrice?: string
+    maxPrice?: string
+    minRevenue?: string
+    maxRevenue?: string
+    minMargin?: string
+    maxMargin?: string
   }
 }
 
@@ -127,22 +134,69 @@ const dummyListings = [
 ]
 
 async function ListingsGrid({ searchParams }: ListingsPageProps) {
+  const where: any = {
+    status: "active",
+    ...(searchParams.type && { type: searchParams.type.toUpperCase() as any }),
+    ...(searchParams.category && {
+      category: {
+        slug: searchParams.category,
+      },
+    }),
+    ...(searchParams.search && {
+      OR: [
+        { title: { contains: searchParams.search, mode: "insensitive" } },
+        { shortDescription: { contains: searchParams.search, mode: "insensitive" } },
+      ],
+    }),
+  }
+
+  // Numeric filters
+  const minPrice = searchParams.minPrice ? Number(searchParams.minPrice) : undefined
+  const maxPrice = searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined
+  const minRevenue = searchParams.minRevenue ? Number(searchParams.minRevenue) : undefined
+  const maxRevenue = searchParams.maxRevenue ? Number(searchParams.maxRevenue) : undefined
+  const minMargin = searchParams.minMargin ? Number(searchParams.minMargin) : undefined
+  const maxMargin = searchParams.maxMargin ? Number(searchParams.maxMargin) : undefined
+
+  if (minPrice || maxPrice) {
+    where.askingPrice = {
+      ...(minPrice && { gte: minPrice }),
+      ...(maxPrice && { lte: maxPrice }),
+    }
+  }
+
+  if (minRevenue || maxRevenue) {
+    where.monthlyRevenue = {
+      ...(minRevenue && { gte: minRevenue }),
+      ...(maxRevenue && { lte: maxRevenue }),
+    }
+  }
+
+  if (minMargin || maxMargin) {
+    where.profitMargin = {
+      ...(minMargin && { gte: minMargin }),
+      ...(maxMargin && { lte: maxMargin }),
+    }
+  }
+
+  let orderBy: any = { createdAt: "desc" }
+
+  switch (searchParams.sort) {
+    case "price_desc":
+      orderBy = { askingPrice: "desc" }
+      break
+    case "revenue_desc":
+      orderBy = { monthlyRevenue: "desc" }
+      break
+    case "trending":
+      orderBy = { views: "desc" }
+      break
+    default:
+      orderBy = { createdAt: "desc" }
+  }
+
   const listings = await prisma.listing.findMany({
-    where: {
-      status: "active",
-      ...(searchParams.type && { type: searchParams.type.toUpperCase() as any }),
-      ...(searchParams.category && {
-        category: {
-          slug: searchParams.category,
-        },
-      }),
-      ...(searchParams.search && {
-        OR: [
-          { title: { contains: searchParams.search, mode: "insensitive" } },
-          { shortDescription: { contains: searchParams.search, mode: "insensitive" } },
-        ],
-      }),
-    },
+    where,
     include: {
       category: true,
       seller: {
@@ -152,7 +206,7 @@ async function ListingsGrid({ searchParams }: ListingsPageProps) {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy,
     take: 50,
   })
 
@@ -207,8 +261,6 @@ async function ListingsGrid({ searchParams }: ListingsPageProps) {
                         <p className="font-semibold text-slate-900">
                           {listing.profitMargin}%
                         </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -246,10 +298,16 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-slate-700">Sort by:</span>
-          <button className="flex h-10 items-center justify-center gap-2 rounded-xl bg-white pl-4 pr-3 text-sm font-medium text-slate-900 shadow-soft border border-slate-200">
-            Newest
-            <ChevronDown className="h-4 w-4 text-slate-500" />
-          </button>
+          <select
+            name="sort"
+            defaultValue={searchParams.sort || "newest"}
+            className="flex h-10 items-center justify-center gap-2 rounded-xl bg-white pl-4 pr-8 text-sm font-medium text-slate-900 shadow-soft border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+          >
+            <option value="newest">Newest</option>
+            <option value="price_desc">Highest price</option>
+            <option value="revenue_desc">Highest revenue</option>
+            <option value="trending">Trending</option>
+          </select>
         </div>
       </div>
 

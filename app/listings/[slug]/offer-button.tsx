@@ -27,12 +27,12 @@ export function OfferButton({ listingId, askingPrice, sellerId }: OfferButtonPro
         className="w-full"
         onClick={() => setModalOpen(true)}
       >
-        Make an Offer
+        Send Offer
       </Button>
       <Button asChild className="w-full" variant="outline">
         <Link href={`/chat?listingId=${listingId}&sellerId=${sellerId}`}>
           <MessageCircle className="mr-2 h-4 w-4" />
-          Chat with Seller
+          Chat With Seller
         </Link>
       </Button>
     </div>
